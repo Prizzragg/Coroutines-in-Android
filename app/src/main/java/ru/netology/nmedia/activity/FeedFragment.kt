@@ -52,6 +52,7 @@ class FeedFragment : Fragment() {
                     Intent.createChooser(intent, getString(R.string.chooser_share_post))
                 startActivity(shareIntent)
             }
+
         })
         binding.list.adapter = adapter
         viewModel.dataState.observe(viewLifecycleOwner) { state ->
@@ -60,6 +61,16 @@ class FeedFragment : Fragment() {
             if (state.error) {
                 Snackbar.make(binding.root, R.string.error_loading, Snackbar.LENGTH_LONG)
                     .setAction(R.string.retry_loading) { viewModel.loadPosts() }
+                    .show()
+            }
+            if (state.errorRemove) {
+                Snackbar.make(binding.root, R.string.error_remove, Snackbar.LENGTH_LONG)
+                    .setAction(R.string.retry_loading) { viewModel.removeById(id = state.id) }
+                    .show()
+            }
+            if (state.errorLike) {
+                Snackbar.make(binding.root, R.string.error_like, Snackbar.LENGTH_LONG)
+                    .setAction(R.string.retry_loading) { viewModel.likeById(id = state.id) }
                     .show()
             }
         }

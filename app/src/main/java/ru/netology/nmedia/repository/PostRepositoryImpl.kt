@@ -1,8 +1,8 @@
 package ru.netology.nmedia.repository
 
-import androidx.lifecycle.*
+import androidx.lifecycle.map
 import okio.IOException
-import ru.netology.nmedia.api.*
+import ru.netology.nmedia.api.PostsApi
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.entity.PostEntity
@@ -48,10 +48,48 @@ class PostRepositoryImpl(private val dao: PostDao) : PostRepository {
     }
 
     override suspend fun removeById(id: Long) {
-        TODO("Not yet implemented")
+        val old = dao.findById(id)
+        dao.removeById(id)
+        try {
+            val response = PostsApi.service.removeById(id)
+            if (!response.isSuccessful) {
+                throw ApiError(response.code(), response.message())
+            }
+        } catch (e: IOException) {
+            dao.insert(old)
+            throw NetworkError
+        } catch (e: Exception) {
+            dao.insert(old)
+            throw UnknownError
+        }
     }
 
     override suspend fun likeById(id: Long) {
-        TODO("Not yet implemented")
+        val old = dao.findById(id)
+        try {
+            if (old.likedByMe) {
+                dao.insert(old.copy(likedByMe = false, likes = old.likes - 1))
+                val response = PostsApi.service.dislikeById(id)
+                if (!response.isSuccessful) {
+                    throw ApiError(response.code(), response.message())
+                }
+                val body = response.body() ?: throw ApiError(response.code(), response.message())
+                dao.insert(post = PostEntity.fromDto(body))
+            } else {
+                dao.insert(old.copy(likedByMe = true, likes = old.likes + 1))
+                val response = PostsApi.service.likeById(id)
+                if (!response.isSuccessful) {
+                    throw ApiError(response.code(), response.message())
+                }
+                val body = response.body() ?: throw ApiError(response.code(), response.message())
+                dao.insert(post = PostEntity.fromDto(body))
+            }
+        } catch (e: IOException) {
+            dao.insert(old)
+            throw NetworkError
+        } catch (e: Exception) {
+            dao.insert(old)
+            throw UnknownError
+        }
     }
 }

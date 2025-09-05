@@ -1,7 +1,11 @@
 package ru.netology.nmedia.viewmodel
 
 import android.app.Application
-import androidx.lifecycle.*
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.map
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.dto.Post
@@ -27,6 +31,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         PostRepositoryImpl(AppDb.getInstance(context = application).postDao())
 
     val data: LiveData<FeedModel> = repository.data.map(::FeedModel)
+
     private val _dataState = MutableLiveData<FeedModelState>()
     val dataState: LiveData<FeedModelState>
         get() = _dataState
@@ -87,11 +92,21 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         edited.value = edited.value?.copy(content = text)
     }
 
-    fun likeById(id: Long) {
-        TODO()
+    fun likeById(id: Long) = viewModelScope.launch {
+        try {
+            _dataState.value = FeedModelState(errorLike = false)
+            repository.likeById(id)
+        } catch (e: Exception) {
+            _dataState.value = FeedModelState(errorLike = true, id = id)
+        }
     }
 
-    fun removeById(id: Long) {
-        TODO()
+    fun removeById(id: Long) = viewModelScope.launch {
+        try {
+            _dataState.value = FeedModelState(errorRemove = false)
+            repository.removeById(id)
+        } catch (e: Exception) {
+            _dataState.value = FeedModelState(errorRemove = true, id = id)
+        }
     }
 }
