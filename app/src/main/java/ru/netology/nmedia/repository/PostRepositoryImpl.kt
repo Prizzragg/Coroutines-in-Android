@@ -1,6 +1,12 @@
 package ru.netology.nmedia.repository
 
-import androidx.lifecycle.map
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import okio.IOException
 import ru.netology.nmedia.api.PostsApi
 import ru.netology.nmedia.dao.PostDao
@@ -9,11 +15,15 @@ import ru.netology.nmedia.entity.PostEntity
 import ru.netology.nmedia.entity.toDto
 import ru.netology.nmedia.entity.toEntity
 import ru.netology.nmedia.error.ApiError
+import ru.netology.nmedia.error.AppError
+import ru.netology.nmedia.error.DbError
 import ru.netology.nmedia.error.NetworkError
 import ru.netology.nmedia.error.UnknownError
 
 class PostRepositoryImpl(private val dao: PostDao) : PostRepository {
-    override val data = dao.getAll().map(List<PostEntity>::toDto)
+    override val data = dao.getAll()
+        .map(List<PostEntity>::toDto)
+        .flowOn(Dispatchers.Default)
 
     override suspend fun getAll() {
         try {
@@ -90,6 +100,33 @@ class PostRepositoryImpl(private val dao: PostDao) : PostRepository {
         } catch (e: Exception) {
             dao.insert(old)
             throw UnknownError
+        }
+    }
+
+
+    override fun getNewer(): Flow<Int> = flow {
+        while (true) {
+            delay(10_000)
+            val id = dao.howManyPosts()
+            val response = PostsApi.service.getNewer(id)
+            if (!response.isSuccessful) {
+                throw ApiError(response.code(), response.message())
+            }
+
+            val body = response.body() ?: throw ApiError(response.code(), response.message())
+            val result = body.toEntity()
+            dao.insert(result.map { it.copy(isUpdated = 0) })
+            emit(body.size)
+        }
+    }.catch { e ->
+        throw AppError.from(e)
+    }
+
+    override suspend fun updatePosts() {
+        try {
+            return dao.updatePosts()
+        } catch (e: DbError) {
+            throw DbError
         }
     }
 }
