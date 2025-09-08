@@ -75,7 +75,11 @@ class FeedFragment : Fragment() {
             }
         }
         viewModel.data.observe(viewLifecycleOwner) { state ->
-            adapter.submitList(state.posts)
+            binding.list.post {
+                adapter.submitList(state.posts) {
+                    binding.list.scrollToPosition(0)
+                }
+            }
             binding.emptyText.isVisible = state.empty
         }
 
@@ -92,7 +96,6 @@ class FeedFragment : Fragment() {
         binding.update.setOnClickListener {
             viewModel.updatePosts()
             binding.update.visibility = View.GONE
-            binding.list.scrollToPosition(0)
         }
 
         binding.fab.setOnClickListener {
