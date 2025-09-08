@@ -27,7 +27,7 @@ interface PostDao {
     @Query("SELECT * FROM PostEntity WHERE id = :id")
     suspend fun findById(id: Long): PostEntity
 
-    @Query("SELECT COUNT(*) FROM PostEntity")
+    @Query("SELECT MAX(id) FROM PostEntity")
     suspend fun howManyPosts(): Long
 
     @Query("UPDATE PostEntity SET isUpdated = 1")
