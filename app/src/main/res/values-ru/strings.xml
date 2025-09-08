@@ -16,9 +16,13 @@
     <string name="retry_loading">Повторить</string>
     <string name="empty_posts">Постов нет.\nЕсли создадите новый пост, то он появится здесь</string>
     <string name="error_loading">Не удалось загрузить данные</string>
+    <string name="error_like">Не удалось лайкнуть пост</string>
+    <string name="error_save">Не удалось сохранить пост</string>
     <string name="save">Сохранить</string>
+    <string name="check_new_posts">Проверить новые посты</string>
     <string name="google_play_unavailable">Google Api Недоступно</string>
     <string name="notification_user_liked">%1$s поставил лайк посту %2$s</string>
     <string name="channel_remote_name">Уведомления с сервера</string>
     <string name="channel_remote_description">Уведомления с удалённого сервера</string>
+    <string name="error_remove">Не удалось удалить пост</string>
 </resources>

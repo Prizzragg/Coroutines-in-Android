@@ -52,6 +52,7 @@ class FeedFragment : Fragment() {
                     Intent.createChooser(intent, getString(R.string.chooser_share_post))
                 startActivity(shareIntent)
             }
+
         })
         binding.list.adapter = adapter
         viewModel.dataState.observe(viewLifecycleOwner) { state ->
@@ -62,14 +63,39 @@ class FeedFragment : Fragment() {
                     .setAction(R.string.retry_loading) { viewModel.loadPosts() }
                     .show()
             }
+            if (state.errorRemove) {
+                Snackbar.make(binding.root, R.string.error_remove, Snackbar.LENGTH_LONG)
+                    .setAction(R.string.retry_loading) { viewModel.removeById(id = state.id) }
+                    .show()
+            }
+            if (state.errorLike) {
+                Snackbar.make(binding.root, R.string.error_like, Snackbar.LENGTH_LONG)
+                    .setAction(R.string.retry_loading) { viewModel.likeById(id = state.id) }
+                    .show()
+            }
         }
         viewModel.data.observe(viewLifecycleOwner) { state ->
-            adapter.submitList(state.posts)
+            binding.list.post {
+                adapter.submitList(state.posts) {
+                    binding.list.scrollToPosition(0)
+                }
+            }
             binding.emptyText.isVisible = state.empty
+        }
+
+        viewModel.newerCount.observe(viewLifecycleOwner) { state ->
+            if (state > 0) {
+                binding.update.visibility = View.VISIBLE
+            }
         }
 
         binding.swiperefresh.setOnRefreshListener {
             viewModel.refreshPosts()
+        }
+
+        binding.update.setOnClickListener {
+            viewModel.updatePosts()
+            binding.update.visibility = View.GONE
         }
 
         binding.fab.setOnClickListener {
