@@ -32,4 +32,5 @@ interface PostDao {
 
     @Query("UPDATE PostEntity SET isUpdated = 1")
     suspend fun updatePosts()
+
 }
