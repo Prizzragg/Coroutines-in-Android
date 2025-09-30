@@ -1,11 +1,13 @@
 package ru.netology.nmedia.adapter
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import ru.netology.nmedia.BuildConfig
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.CardPostBinding
@@ -17,6 +19,7 @@ interface OnInteractionListener {
     fun onEdit(post: Post) {}
     fun onRemove(post: Post) {}
     fun onShare(post: Post) {}
+    fun onOpenPhoto(photoUrl: String) {}
 }
 
 class PostsAdapter(
@@ -44,6 +47,17 @@ class PostViewHolder(
             published.text = post.published
             content.text = post.content
             avatar.loadCircleCrop("${BuildConfig.BASE_URL}/avatars/${post.authorAvatar}")
+            if (post.attachment == null) {
+                binding.photoAttachment.visibility = View.GONE
+            } else {
+                binding.photoAttachment.visibility = View.VISIBLE
+                Glide.with(binding.photoAttachment)
+                    .load("http://10.0.2.2:9999/media/${post.attachment.url}")
+                    .placeholder(R.drawable.ic_loading_100dp)
+                    .error(R.drawable.ic_error_100dp)
+                    .timeout(10_000)
+                    .into(binding.photoAttachment)
+            }
             like.isChecked = post.likedByMe
             like.text = "${post.likes}"
 
@@ -56,6 +70,7 @@ class PostViewHolder(
                                 onInteractionListener.onRemove(post)
                                 true
                             }
+
                             R.id.edit -> {
                                 onInteractionListener.onEdit(post)
                                 true
@@ -74,6 +89,11 @@ class PostViewHolder(
             share.setOnClickListener {
                 onInteractionListener.onShare(post)
             }
+
+            photoAttachment.setOnClickListener {
+                onInteractionListener.onOpenPhoto("http://10.0.2.2:9999/media/${post.attachment?.url}")
+            }
+
         }
     }
 }

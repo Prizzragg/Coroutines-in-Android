@@ -11,6 +11,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import ru.netology.nmedia.R
+import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
 import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostsAdapter
 import ru.netology.nmedia.databinding.FragmentFeedBinding
@@ -41,6 +42,16 @@ class FeedFragment : Fragment() {
                 viewModel.removeById(post.id)
             }
 
+            override fun onOpenPhoto(photoUrl: String) {
+
+                findNavController().navigate(
+                    R.id.action_feedFragment_to_photoFragment,
+                    Bundle().apply {
+                        textArg = photoUrl
+                    }
+                )
+            }
+
             override fun onShare(post: Post) {
                 val intent = Intent().apply {
                     action = Intent.ACTION_SEND
@@ -52,6 +63,7 @@ class FeedFragment : Fragment() {
                     Intent.createChooser(intent, getString(R.string.chooser_share_post))
                 startActivity(shareIntent)
             }
+
         })
         binding.list.adapter = adapter
         viewModel.dataState.observe(viewLifecycleOwner) { state ->
@@ -62,14 +74,39 @@ class FeedFragment : Fragment() {
                     .setAction(R.string.retry_loading) { viewModel.loadPosts() }
                     .show()
             }
+            if (state.errorRemove) {
+                Snackbar.make(binding.root, R.string.error_remove, Snackbar.LENGTH_LONG)
+                    .setAction(R.string.retry_loading) { viewModel.removeById(id = state.id) }
+                    .show()
+            }
+            if (state.errorLike) {
+                Snackbar.make(binding.root, R.string.error_like, Snackbar.LENGTH_LONG)
+                    .setAction(R.string.retry_loading) { viewModel.likeById(id = state.id) }
+                    .show()
+            }
         }
         viewModel.data.observe(viewLifecycleOwner) { state ->
-            adapter.submitList(state.posts)
+            binding.list.post {
+                adapter.submitList(state.posts) {
+                    binding.list.scrollToPosition(0)
+                }
+            }
             binding.emptyText.isVisible = state.empty
+        }
+
+        viewModel.newerCount.observe(viewLifecycleOwner) { state ->
+            if (state > 0) {
+                binding.update.visibility = View.VISIBLE
+            }
         }
 
         binding.swiperefresh.setOnRefreshListener {
             viewModel.refreshPosts()
+        }
+
+        binding.update.setOnClickListener {
+            viewModel.updatePosts()
+            binding.update.visibility = View.GONE
         }
 
         binding.fab.setOnClickListener {
