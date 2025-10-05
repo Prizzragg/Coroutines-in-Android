@@ -13,4 +13,8 @@ interface PostRepository {
     suspend fun removeById(id: Long)
     suspend fun likeById(id: Long)
     suspend fun updatePosts()
+
+    suspend fun signIn(login: String, password: String)
+
+    suspend fun signUp(name: String, login: String, password: String)
 }

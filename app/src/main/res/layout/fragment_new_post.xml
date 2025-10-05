@@ -27,6 +27,17 @@
                 android:inputType="textMultiLine"
                 android:padding="@dimen/common_spacing" />
 
+            <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+                android:id="@+id/exit_confirmation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:clickable="true"
+                android:contentDescription="@string/exit_confirmation"
+                android:focusable="true"
+                android:text="@string/exit_confirmation"
+                android:visibility="gone" />
+
             <FrameLayout
                 android:id="@+id/previewContainer"
                 android:layout_width="match_parent"

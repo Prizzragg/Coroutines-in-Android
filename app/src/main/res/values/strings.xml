@@ -26,4 +26,15 @@
     <string name="error_save">Error save</string>
     <string name="description_photo_post">Photo post attachment</string>
     <string name="image_pick_error">Image pick error</string>
+    <string name="logout">logout</string>
+    <string name="sign_in">Sign in</string>
+    <string name="sign_up">Sign up</string>
+    <string name="login_text">Login</string>
+    <string name="password_text">Password</string>
+    <string name="please_auth">Please, sign in</string>
+    <string name="name_auth">Name</string>
+    <string name="passw_conf_auth">Password confirmation</string>
+    <string name="register">Register</string>
+    <string name="passw_dont_match">The passwords don\'t match</string>
+    <string name="exit_confirmation">Exit confirmation</string>
 </resources>

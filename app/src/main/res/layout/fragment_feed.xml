@@ -69,5 +69,17 @@
         android:focusable="true"
         android:text="@string/check_new_posts"
         android:visibility="gone" />
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/please_Auth"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:clickable="true"
+        android:contentDescription="@string/sign_in"
+        android:focusable="true"
+        android:text="@string/please_auth"
+        android:visibility="gone" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

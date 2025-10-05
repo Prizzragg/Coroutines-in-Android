@@ -47,6 +47,7 @@ android {
 }
 
 dependencies {
+    implementation 'androidx.navigation:navigation-compose:2.9.5'
     def core_version = "1.17.0"
     def appcompat_version = "1.7.1"
     def constraintlayout_version = "2.2.1"

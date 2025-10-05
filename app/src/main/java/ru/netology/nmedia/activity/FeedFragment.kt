@@ -14,6 +14,7 @@ import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
 import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostsAdapter
+import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.databinding.FragmentFeedBinding
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.viewmodel.PostViewModel
@@ -35,7 +36,15 @@ class FeedFragment : Fragment() {
             }
 
             override fun onLike(post: Post) {
-                viewModel.likeById(post.id)
+                if (AppAuth.getInstance().data.value == null) {
+                    binding.pleaseAuth.visibility = View.VISIBLE
+                    binding.pleaseAuth.setOnClickListener {
+                        findNavController().navigate(R.id.action_feedFragment_to_signInFragment)
+                    }
+                } else {
+                    binding.pleaseAuth.visibility = View.GONE
+                    viewModel.likeById(post.id)
+                }
             }
 
             override fun onRemove(post: Post) {
@@ -110,7 +119,15 @@ class FeedFragment : Fragment() {
         }
 
         binding.fab.setOnClickListener {
-            findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
+            if (AppAuth.getInstance().data.value == null) {
+                binding.pleaseAuth.visibility = View.VISIBLE
+                binding.pleaseAuth.setOnClickListener {
+                    findNavController().navigate(R.id.action_feedFragment_to_signInFragment)
+                }
+            } else {
+                findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
+                binding.pleaseAuth.visibility = View.GONE
+            }
         }
 
         return binding.root

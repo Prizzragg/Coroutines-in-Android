@@ -11,6 +11,7 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okio.IOException
 import ru.netology.nmedia.api.PostsApi
+import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dto.Attachment
 import ru.netology.nmedia.dto.Media
@@ -150,4 +151,36 @@ class PostRepositoryImpl(private val dao: PostDao) : PostRepository {
             throw DbError
         }
     }
+
+    override suspend fun signIn(login: String, password: String) {
+        try {
+            val response = PostsApi.service.updateUser(login, password)
+            if (!response.isSuccessful) {
+                throw ApiError(response.code(), response.message())
+            }
+            val body = response.body() ?: throw ApiError(response.code(), response.message())
+            AppAuth.getInstance().setAuth(body.id, body.token)
+        } catch (e: Exception) {
+            throw UnknownError
+        }
+    }
+
+    override suspend fun signUp(
+        name: String,
+        login: String,
+        password: String
+    ) {
+        try {
+            val response = PostsApi.service.registerUser(login, password, name)
+            if (!response.isSuccessful) {
+                throw ApiError(response.code(), response.message())
+            }
+            val body = response.body() ?: throw ApiError(response.code(), response.message())
+            AppAuth.getInstance().setAuth(body.id, body.token)
+        } catch (e: Exception) {
+            throw UnknownError
+        }
+    }
+
+
 }
