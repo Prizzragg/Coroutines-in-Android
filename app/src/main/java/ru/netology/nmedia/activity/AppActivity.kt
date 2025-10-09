@@ -66,10 +66,10 @@ class AppActivity : AppCompatActivity() {
                         R.id.logout -> {
                             val builder: AlertDialog.Builder = AlertDialog.Builder(this@AppActivity)
                             builder
-                                .setMessage("Are you sure?")
-                                .setNegativeButton("No") { dialog, which ->
+                                .setMessage(R.string.you_sure)
+                                .setNegativeButton(R.string.no) { dialog, which ->
                                     dialog.cancel()
-                                }.setPositiveButton("Yes") { dialog, which ->
+                                }.setPositiveButton(R.string.yes) { dialog, which ->
                                     AppAuth.getInstance().removeAuth()
                                     findNavController(R.id.nav_host_fragment)
                                         .navigate(R.id.feedFragment)
