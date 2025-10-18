@@ -10,15 +10,22 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.R
+import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
 import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostsAdapter
+import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.databinding.FragmentFeedBinding
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.viewmodel.PostViewModel
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class FeedFragment : Fragment() {
 
+    @Inject
+    lateinit var appAuth: AppAuth
     private val viewModel: PostViewModel by activityViewModels()
 
     override fun onCreateView(
@@ -34,11 +41,29 @@ class FeedFragment : Fragment() {
             }
 
             override fun onLike(post: Post) {
-                viewModel.likeById(post.id)
+                if (appAuth.data.value == null) {
+                    binding.pleaseAuth.visibility = View.VISIBLE
+                    binding.pleaseAuth.setOnClickListener {
+                        findNavController().navigate(R.id.action_feedFragment_to_signInFragment)
+                    }
+                } else {
+                    binding.pleaseAuth.visibility = View.GONE
+                    viewModel.likeById(post.id)
+                }
             }
 
             override fun onRemove(post: Post) {
                 viewModel.removeById(post.id)
+            }
+
+            override fun onOpenPhoto(photoUrl: String) {
+
+                findNavController().navigate(
+                    R.id.action_feedFragment_to_photoFragment,
+                    Bundle().apply {
+                        textArg = photoUrl
+                    }
+                )
             }
 
             override fun onShare(post: Post) {
@@ -52,6 +77,7 @@ class FeedFragment : Fragment() {
                     Intent.createChooser(intent, getString(R.string.chooser_share_post))
                 startActivity(shareIntent)
             }
+
         })
         binding.list.adapter = adapter
         viewModel.dataState.observe(viewLifecycleOwner) { state ->
@@ -62,18 +88,51 @@ class FeedFragment : Fragment() {
                     .setAction(R.string.retry_loading) { viewModel.loadPosts() }
                     .show()
             }
+            if (state.errorRemove) {
+                Snackbar.make(binding.root, R.string.error_remove, Snackbar.LENGTH_LONG)
+                    .setAction(R.string.retry_loading) { viewModel.removeById(id = state.id) }
+                    .show()
+            }
+            if (state.errorLike) {
+                Snackbar.make(binding.root, R.string.error_like, Snackbar.LENGTH_LONG)
+                    .setAction(R.string.retry_loading) { viewModel.likeById(id = state.id) }
+                    .show()
+            }
         }
         viewModel.data.observe(viewLifecycleOwner) { state ->
-            adapter.submitList(state.posts)
+            binding.list.post {
+                adapter.submitList(state.posts) {
+                    binding.list.scrollToPosition(0)
+                }
+            }
             binding.emptyText.isVisible = state.empty
+        }
+
+        viewModel.newerCount.observe(viewLifecycleOwner) { state ->
+            if (state > 0) {
+                binding.update.visibility = View.VISIBLE
+            }
         }
 
         binding.swiperefresh.setOnRefreshListener {
             viewModel.refreshPosts()
         }
 
+        binding.update.setOnClickListener {
+            viewModel.updatePosts()
+            binding.update.visibility = View.GONE
+        }
+
         binding.fab.setOnClickListener {
-            findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
+            if (appAuth.data.value == null) {
+                binding.pleaseAuth.visibility = View.VISIBLE
+                binding.pleaseAuth.setOnClickListener {
+                    findNavController().navigate(R.id.action_feedFragment_to_signInFragment)
+                }
+            } else {
+                findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
+                binding.pleaseAuth.visibility = View.GONE
+            }
         }
 
         return binding.root
