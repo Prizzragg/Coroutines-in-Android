@@ -37,4 +37,9 @@
     <string name="register">Register</string>
     <string name="passw_dont_match">The passwords don\'t match</string>
     <string name="exit_confirmation">Exit confirmation</string>
+    <string name="you_sure">Are you sure?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="auth_error">Authorization error, this user may already exist</string>
+    <string name="registration_error">Registration error, this user may already be registered</string>
 </resources>

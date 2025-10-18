@@ -25,6 +25,15 @@ class SignUpFragment : Fragment() {
             container,
             false
         )
+        viewModel.dataState.observe(viewLifecycleOwner) { state ->
+            if (state.error) {
+                Toast.makeText(requireContext(), R.string.registration_error, Toast.LENGTH_SHORT)
+                    .show()
+            }
+            if (state.successfully) {
+                findNavController().navigateUp()
+            }
+        }
         binding.signUp.setOnClickListener {
             val name = binding.name.text.toString()
             val login = binding.login.text.toString()
@@ -35,7 +44,6 @@ class SignUpFragment : Fragment() {
                     .show()
             } else {
                 viewModel.signUp(name, login, password)
-                findNavController().navigate(R.id.action_signUpFragment_to_feedFragment)
             }
         }
         return binding.root
