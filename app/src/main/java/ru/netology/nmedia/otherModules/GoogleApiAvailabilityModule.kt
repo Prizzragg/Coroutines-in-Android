@@ -13,5 +13,5 @@ class GoogleApiAvailabilityModule {
 
     @Singleton
     @Provides
-    fun provideInstance() : GoogleApiAvailability = GoogleApiAvailability.getInstance()
+    fun provideInstance(): GoogleApiAvailability = GoogleApiAvailability.getInstance()
 }

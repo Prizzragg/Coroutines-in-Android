@@ -34,6 +34,7 @@ private val empty = Post(
     likes = 0,
     published = ""
 )
+
 @HiltViewModel
 @OptIn(ExperimentalCoroutinesApi::class)
 class PostViewModel @Inject constructor(

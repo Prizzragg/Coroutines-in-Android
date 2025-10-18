@@ -15,6 +15,7 @@ import ru.netology.nmedia.dto.Media
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.dto.PushToken
 import ru.netology.nmedia.dto.Token
+
 interface PostsApiService {
     @GET("posts")
     suspend fun getAll(): Response<List<Post>>

@@ -49,7 +49,7 @@ class ApiModule {
     @Provides
     fun provideRetrofit(
         okHttpClient: OkHttpClient
-    ) : Retrofit = Retrofit.Builder()
+    ): Retrofit = Retrofit.Builder()
         .addConverterFactory(GsonConverterFactory.create())
         .baseUrl(BASE_URL)
         .client(okHttpClient)
@@ -59,5 +59,5 @@ class ApiModule {
     @Provides
     fun provideApiService(
         retrofit: Retrofit
-    ) : PostsApiService = retrofit.create()
+    ): PostsApiService = retrofit.create()
 }
