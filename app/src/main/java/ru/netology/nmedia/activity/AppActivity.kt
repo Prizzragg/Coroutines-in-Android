@@ -16,18 +16,31 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.MenuProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.fragment.app.viewModels
 import androidx.navigation.findNavController
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.firebase.messaging.FirebaseMessaging
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.databinding.ActivityAppBinding
 import ru.netology.nmedia.viewmodel.AuthViewModel
+import ru.netology.nmedia.viewmodel.PostViewModel
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class AppActivity : AppCompatActivity() {
-    private val viewModel by viewModels<AuthViewModel>()
+    @Inject
+    lateinit var appAuth: AppAuth
+
+    @Inject
+    lateinit var fireBaseMessaging: FirebaseMessaging
+
+    @Inject
+    lateinit var googleApiAvailability: GoogleApiAvailability
+    private val viewModel: AuthViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,7 +83,7 @@ class AppActivity : AppCompatActivity() {
                                 .setNegativeButton(R.string.no) { dialog, which ->
                                     dialog.cancel()
                                 }.setPositiveButton(R.string.yes) { dialog, which ->
-                                    AppAuth.getInstance().removeAuth()
+                                    appAuth.removeAuth()
                                     findNavController(R.id.nav_host_fragment)
                                         .navigate(R.id.feedFragment)
                                 }
@@ -133,7 +146,7 @@ class AppActivity : AppCompatActivity() {
     }
 
     private fun checkGoogleApiAvailability() {
-        with(GoogleApiAvailability.getInstance()) {
+        with(googleApiAvailability) {
             val code = isGooglePlayServicesAvailable(this@AppActivity)
             if (code == ConnectionResult.SUCCESS) {
                 return@with
@@ -146,8 +159,14 @@ class AppActivity : AppCompatActivity() {
                 .show()
         }
 
-        FirebaseMessaging.getInstance().token.addOnSuccessListener {
-            println(it)
+        fireBaseMessaging.token.addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                println("some stuff happened: ${task.exception}")
+                return@addOnCompleteListener
+            }
+
+            val token = task.result
+            println(token)
         }
     }
 }
