@@ -2,6 +2,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'com.google.devtools.ksp' // вместо устаревшего 'kotlin-kapt'
 apply plugin: 'com.google.gms.google-services'
+apply plugin: 'dagger.hilt.android.plugin'
 
 android {
     namespace "ru.netology.nmedia"
@@ -47,6 +48,7 @@ android {
 }
 
 dependencies {
+    implementation 'androidx.navigation:navigation-compose:2.9.5'
     def core_version = "1.17.0"
     def appcompat_version = "1.7.1"
     def constraintlayout_version = "2.2.1"
@@ -66,6 +68,9 @@ dependencies {
     def coroutines_version = "1.10.2"
     def play_services_base_version = "18.7.2"
     def core_desugaring_version = "2.1.5"
+    def image_picker_version = "2.1"
+    def paging_version = "3.1.0"
+
 
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "androidx.core:core-ktx:$core_version"
@@ -93,4 +98,8 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
     implementation "com.google.android.gms:play-services-base:$play_services_base_version"
     coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:$core_desugaring_version"
+    implementation "com.github.dhaval2404:imagepicker:$image_picker_version"
+    implementation "com.google.dagger:hilt-android:$hilt_version"
+    ksp "com.google.dagger:hilt-compiler:$hilt_version"
+    implementation "androidx.paging:paging-runtime-ktx:$paging_version"
 }
