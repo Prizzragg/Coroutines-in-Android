@@ -1,5 +1,6 @@
 package ru.netology.nmedia.api
 
+import androidx.room.Query
 import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.Body
@@ -19,6 +20,15 @@ import ru.netology.nmedia.dto.Token
 interface PostsApiService {
     @GET("posts")
     suspend fun getAll(): Response<List<Post>>
+
+    @GET("posts/latest")
+    suspend fun getLatest(@retrofit2.http.Query("count") count: Int): Response<List<Post>>
+
+    @GET("posts/{id}/before")
+    suspend fun getBefore(@Path("id") id: Long,@retrofit2.http.Query("count") count: Int): Response<List<Post>>
+
+    @GET("posts/{id}/after")
+    suspend fun getAfter(@Path("id") id: Long, @retrofit2.http.Query("count") count: Int): Response<List<Post>>
 
     @GET("posts/{id}")
     suspend fun getById(@Path("id") id: Long): Response<Post>

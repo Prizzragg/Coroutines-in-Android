@@ -69,6 +69,7 @@ dependencies {
     def play_services_base_version = "18.7.2"
     def core_desugaring_version = "2.1.5"
     def image_picker_version = "2.1"
+    def paging_version = "3.1.0"
 
 
     implementation fileTree(dir: "libs", include: ["*.jar"])
@@ -100,4 +101,5 @@ dependencies {
     implementation "com.github.dhaval2404:imagepicker:$image_picker_version"
     implementation "com.google.dagger:hilt-android:$hilt_version"
     ksp "com.google.dagger:hilt-compiler:$hilt_version"
+    implementation "androidx.paging:paging-runtime-ktx:$paging_version"
 }
