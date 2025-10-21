@@ -8,8 +8,8 @@ import java.io.File
 interface PostRepository {
     val data: Flow<PagingData<Post>>
 
-    fun getNewer(): Flow<Int>
-    suspend fun getAll()
+    //fun getNewer(): Flow<Int>
+    //suspend fun getAll()
     suspend fun save(post: Post, photo: File?)
     suspend fun removeById(id: Long)
     suspend fun likeById(id: Long)

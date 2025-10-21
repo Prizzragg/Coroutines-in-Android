@@ -4,8 +4,6 @@ import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
-import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.map
@@ -13,15 +11,12 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.switchMap
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.dto.Post
-import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.model.FeedModelState
 import ru.netology.nmedia.model.PhotoModel
 import ru.netology.nmedia.repository.PostRepository
@@ -60,11 +55,11 @@ class PostViewModel @Inject constructor(
     val photo: LiveData<PhotoModel?>
         get() = _photo
 
-    val newerCount = data.flatMapLatest {
-        repository.getNewer()
-            .catch { _dataState.postValue(FeedModelState(error = true)) }
-            .flowOn(Dispatchers.Default)
-    }
+    //val newerCount = data.flatMapLatest {
+    //repository.getNewer()
+    //.catch { _dataState.postValue(FeedModelState(error = true)) }
+    //.flowOn(Dispatchers.Default)
+    //}
     private val _dataState = MutableLiveData<FeedModelState>()
     val dataState: LiveData<FeedModelState>
         get() = _dataState
@@ -74,33 +69,33 @@ class PostViewModel @Inject constructor(
     val postCreated: LiveData<Unit>
         get() = _postCreated
 
-    init {
-        loadPosts()
-    }
+    //init {
+    //loadPosts()
+    //}
 
     fun updatePhoto(uri: Uri, file: File) {
         _photo.value = PhotoModel(uri, file)
     }
 
-    fun loadPosts() = viewModelScope.launch {
-        try {
-            _dataState.value = FeedModelState(loading = true)
-            repository.getAll()
-            _dataState.value = FeedModelState()
-        } catch (e: Exception) {
-            _dataState.value = FeedModelState(error = true)
-        }
-    }
+    //fun loadPosts() = viewModelScope.launch {
+    //try {
+    //_dataState.value = FeedModelState(loading = true)
+    //repository.getAll()
+    //_dataState.value = FeedModelState()
+    //} catch (e: Exception) {
+    //_dataState.value = FeedModelState(error = true)
+    //}
+    //}
 
-    fun refreshPosts() = viewModelScope.launch {
-        try {
-            _dataState.value = FeedModelState(refreshing = true)
-            repository.getAll()
-            _dataState.value = FeedModelState()
-        } catch (e: Exception) {
-            _dataState.value = FeedModelState(error = true)
-        }
-    }
+    //fun refreshPosts() = viewModelScope.launch {
+    //try {
+    //_dataState.value = FeedModelState(refreshing = true)
+    //repository.getAll()
+    //_dataState.value = FeedModelState()
+    //} catch (e: Exception) {
+    //_dataState.value = FeedModelState(error = true)
+    //}
+    //}
 
     fun save() {
         edited.value?.let {

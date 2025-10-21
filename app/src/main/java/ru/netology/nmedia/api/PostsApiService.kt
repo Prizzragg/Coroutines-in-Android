@@ -1,6 +1,5 @@
 package ru.netology.nmedia.api
 
-import androidx.room.Query
 import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.Body
@@ -18,17 +17,23 @@ import ru.netology.nmedia.dto.PushToken
 import ru.netology.nmedia.dto.Token
 
 interface PostsApiService {
-    @GET("posts")
-    suspend fun getAll(): Response<List<Post>>
+    //@GET("posts")
+    //suspend fun getAll(): Response<List<Post>>
 
     @GET("posts/latest")
     suspend fun getLatest(@retrofit2.http.Query("count") count: Int): Response<List<Post>>
 
     @GET("posts/{id}/before")
-    suspend fun getBefore(@Path("id") id: Long,@retrofit2.http.Query("count") count: Int): Response<List<Post>>
+    suspend fun getBefore(
+        @Path("id") id: Long,
+        @retrofit2.http.Query("count") count: Int
+    ): Response<List<Post>>
 
     @GET("posts/{id}/after")
-    suspend fun getAfter(@Path("id") id: Long, @retrofit2.http.Query("count") count: Int): Response<List<Post>>
+    suspend fun getAfter(
+        @Path("id") id: Long,
+        @retrofit2.http.Query("count") count: Int
+    ): Response<List<Post>>
 
     @GET("posts/{id}")
     suspend fun getById(@Path("id") id: Long): Response<Post>
@@ -45,8 +50,8 @@ interface PostsApiService {
     @DELETE("posts/{id}/likes")
     suspend fun dislikeById(@Path("id") id: Long): Response<Post>
 
-    @GET("posts/{id}/newer")
-    suspend fun getNewer(@Path("id") id: Long): Response<List<Post>>
+    //@GET("posts/{id}/newer")
+    //suspend fun getNewer(@Path("id") id: Long): Response<List<Post>>
 
     @Multipart
     @POST("media")

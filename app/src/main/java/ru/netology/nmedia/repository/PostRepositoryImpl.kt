@@ -1,13 +1,11 @@
+@file:OptIn(ExperimentalPagingApi::class)
+
 package ru.netology.nmedia.repository
 
+import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
+import androidx.paging.map
 import kotlinx.coroutines.flow.map
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -15,15 +13,14 @@ import okio.IOException
 import ru.netology.nmedia.api.PostsApiService
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.dao.PostDao
+import ru.netology.nmedia.dao.PostRemoteKeyDao
+import ru.netology.nmedia.db.AppDb
 import ru.netology.nmedia.dto.Attachment
 import ru.netology.nmedia.dto.Media
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.entity.PostEntity
-import ru.netology.nmedia.entity.toDto
-import ru.netology.nmedia.entity.toEntity
 import ru.netology.nmedia.enumeration.AttachmentType
 import ru.netology.nmedia.error.ApiError
-import ru.netology.nmedia.error.AppError
 import ru.netology.nmedia.error.DbError
 import ru.netology.nmedia.error.NetworkError
 import ru.netology.nmedia.error.UnknownError
@@ -32,7 +29,9 @@ import javax.inject.Inject
 
 class PostRepositoryImpl @Inject constructor(
     private val dao: PostDao,
-    private val apiService: PostsApiService
+    private val apiService: PostsApiService,
+    postRemoteKeyDao: PostRemoteKeyDao,
+    appDb: AppDb
 ) : PostRepository {
 
     @Inject
@@ -41,27 +40,32 @@ class PostRepositoryImpl @Inject constructor(
     override val data = Pager(
         config = PagingConfig(pageSize = 10, enablePlaceholders = false),
         pagingSourceFactory = {
-            PostPagingSource(
-                apiService
-            )
-        }
+            dao.getPagingSource()
+        },
+        remoteMediator = PostRemoteMediator(
+            service = apiService,
+            postDao = dao,
+            postRemoteKeyDao = postRemoteKeyDao,
+            appDb = appDb
+        )
     ).flow
+        .map { it.map(PostEntity::toDto) }
 
-    override suspend fun getAll() {
-        try {
-            val response = apiService.getAll()
-            if (!response.isSuccessful) {
-                throw ApiError(response.code(), response.message())
-            }
+    //override suspend fun getAll() {
+    //try {
+    //val response = apiService.getAll()
+    //if (!response.isSuccessful) {
+    //throw ApiError(response.code(), response.message())
+    //}
 
-            val body = response.body() ?: throw ApiError(response.code(), response.message())
-            dao.insert(body.toEntity())
-        } catch (e: IOException) {
-            throw NetworkError
-        } catch (e: Exception) {
-            throw UnknownError
-        }
-    }
+    //val body = response.body() ?: throw ApiError(response.code(), response.message())
+    //dao.insert(body.toEntity())
+    //} catch (e: IOException) {
+    //throw NetworkError
+    //} catch (e: Exception) {
+    //throw UnknownError
+    //}
+    //}
 
     override suspend fun save(post: Post, photo: File?) {
         try {
@@ -141,23 +145,23 @@ class PostRepositoryImpl @Inject constructor(
     }
 
 
-    override fun getNewer(): Flow<Int> = flow {
-        while (true) {
-            delay(10_000)
-            val id = dao.howManyPosts()
-            val response = apiService.getNewer(id)
-            if (!response.isSuccessful) {
-                throw ApiError(response.code(), response.message())
-            }
+    //override fun getNewer(): Flow<Int> = flow {
+    //while (true) {
+    //delay(10_000)
+    //val id = dao.howManyPosts()
+    //val response = apiService.getNewer(id)
+    //if (!response.isSuccessful) {
+    //throw ApiError(response.code(), response.message())
+    //}
 
-            val body = response.body() ?: throw ApiError(response.code(), response.message())
-            val result = body.toEntity()
-            dao.insert(result.map { it.copy(isUpdated = 0) })
-            emit(body.size)
-        }
-    }.catch { e ->
-        throw AppError.from(e)
-    }
+    //val body = response.body() ?: throw ApiError(response.code(), response.message())
+    //val result = body.toEntity()
+    //dao.insert(result.map { it.copy(isUpdated = 0) })
+    //emit(body.size)
+    //}
+    //}.catch { e ->
+    //throw AppError.from(e)
+    //}
 
     override suspend fun updatePosts() {
         try {
