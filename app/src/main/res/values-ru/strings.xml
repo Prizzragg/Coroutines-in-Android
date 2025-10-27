@@ -43,4 +43,7 @@
     <string name="no">Нет</string>
     <string name="auth_error">Ошибка авторизации, возможно, такой пользователь уже существует</string>
     <string name="registration_error">Ошибка регистрации, возможно такой пользователь уже зарегистрирован</string>
+    <string name="image_ad">Изображение рекламы</string>
+    <string name="unknown_item_type">Неизвестный тип item</string>
+    <string name="unknown_view_type">Неизвестный тип view</string>
 </resources>

@@ -42,4 +42,7 @@
     <string name="no">No</string>
     <string name="auth_error">Authorization error, this user may already exist</string>
     <string name="registration_error">Registration error, this user may already be registered</string>
+    <string name="image_ad">Image ad</string>
+    <string name="unknown_item_type">Unknown item type</string>
+    <string name="unknown_view_type">Unknown view type</string>
 </resources>
