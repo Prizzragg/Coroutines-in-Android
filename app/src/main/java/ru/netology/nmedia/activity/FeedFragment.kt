@@ -8,17 +8,28 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.paging.LoadState
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
 import ru.netology.nmedia.R
+import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
 import ru.netology.nmedia.adapter.OnInteractionListener
+import ru.netology.nmedia.adapter.PostLoadingStateAdapter
 import ru.netology.nmedia.adapter.PostsAdapter
+import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.databinding.FragmentFeedBinding
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.viewmodel.PostViewModel
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class FeedFragment : Fragment() {
 
+    @Inject
+    lateinit var appAuth: AppAuth
     private val viewModel: PostViewModel by activityViewModels()
 
     override fun onCreateView(
@@ -34,11 +45,29 @@ class FeedFragment : Fragment() {
             }
 
             override fun onLike(post: Post) {
-                viewModel.likeById(post.id)
+                if (appAuth.data.value == null) {
+                    binding.pleaseAuth.visibility = View.VISIBLE
+                    binding.pleaseAuth.setOnClickListener {
+                        findNavController().navigate(R.id.action_feedFragment_to_signInFragment)
+                    }
+                } else {
+                    binding.pleaseAuth.visibility = View.GONE
+                    viewModel.likeById(post.id)
+                }
             }
 
             override fun onRemove(post: Post) {
                 viewModel.removeById(post.id)
+            }
+
+            override fun onOpenPhoto(photoUrl: String) {
+
+                findNavController().navigate(
+                    R.id.action_feedFragment_to_photoFragment,
+                    Bundle().apply {
+                        textArg = photoUrl
+                    }
+                )
             }
 
             override fun onShare(post: Post) {
@@ -52,28 +81,71 @@ class FeedFragment : Fragment() {
                     Intent.createChooser(intent, getString(R.string.chooser_share_post))
                 startActivity(shareIntent)
             }
+
         })
-        binding.list.adapter = adapter
+        binding.list.adapter = adapter.withLoadStateHeaderAndFooter(
+            header = PostLoadingStateAdapter { adapter.retry() },
+            footer = PostLoadingStateAdapter { adapter.retry() }
+        )
         viewModel.dataState.observe(viewLifecycleOwner) { state ->
             binding.progress.isVisible = state.loading
             binding.swiperefresh.isRefreshing = state.refreshing
-            if (state.error) {
-                Snackbar.make(binding.root, R.string.error_loading, Snackbar.LENGTH_LONG)
-                    .setAction(R.string.retry_loading) { viewModel.loadPosts() }
+            //if (state.error) {
+            //Snackbar.make(binding.root, R.string.error_loading, Snackbar.LENGTH_LONG)
+            //.setAction(R.string.retry_loading) { viewModel.loadPosts() }
+            //.show()
+            //}
+            if (state.errorRemove) {
+                Snackbar.make(binding.root, R.string.error_remove, Snackbar.LENGTH_LONG)
+                    .setAction(R.string.retry_loading) { viewModel.removeById(id = state.id) }
+                    .show()
+            }
+            if (state.errorLike) {
+                Snackbar.make(binding.root, R.string.error_like, Snackbar.LENGTH_LONG)
+                    .setAction(R.string.retry_loading) { viewModel.likeById(id = state.id) }
                     .show()
             }
         }
-        viewModel.data.observe(viewLifecycleOwner) { state ->
-            adapter.submitList(state.posts)
-            binding.emptyText.isVisible = state.empty
+        lifecycleScope.launchWhenCreated {
+            viewModel.data.collectLatest {
+                adapter.submitData(it)
+            }
+        }
+
+        lifecycleScope.launchWhenCreated {
+            adapter.loadStateFlow.collectLatest {
+                binding.swiperefresh.isRefreshing = it.refresh is LoadState.Loading
+            }
+        }
+
+        lifecycleScope.launchWhenCreated {
+            appAuth.data.collectLatest {
+                adapter.refresh()
+            }
         }
 
         binding.swiperefresh.setOnRefreshListener {
-            viewModel.refreshPosts()
+            adapter.refresh()
         }
 
+
+        binding.update.setOnClickListener {
+            viewModel.updatePosts()
+            binding.update.visibility = View.GONE
+        }
+
+
+
         binding.fab.setOnClickListener {
-            findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
+            if (appAuth.data.value == null) {
+                binding.pleaseAuth.visibility = View.VISIBLE
+                binding.pleaseAuth.setOnClickListener {
+                    findNavController().navigate(R.id.action_feedFragment_to_signInFragment)
+                }
+            } else {
+                findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
+                binding.pleaseAuth.visibility = View.GONE
+            }
         }
 
         return binding.root
