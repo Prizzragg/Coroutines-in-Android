@@ -5,9 +5,15 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.MenuProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.findNavController
@@ -16,15 +22,70 @@ import com.google.android.gms.common.GoogleApiAvailability
 import com.google.firebase.messaging.FirebaseMessaging
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
+import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.databinding.ActivityAppBinding
+import ru.netology.nmedia.viewmodel.AuthViewModel
 
 class AppActivity : AppCompatActivity() {
+    private val viewModel by viewModels<AuthViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         enableEdgeToEdge()
         requestNotificationsPermission()
+
+        addMenuProvider(
+            object : MenuProvider {
+                override fun onCreateMenu(
+                    menu: Menu,
+                    menuInflater: MenuInflater
+                ) {
+                    menuInflater.inflate(R.menu.menu_auth, menu)
+                    viewModel.data.observe(this@AppActivity) {
+                        val authorized = viewModel.isAuthorized
+                        menu.setGroupVisible(R.id.authorized, authorized)
+                        menu.setGroupVisible(R.id.unauthorized, !authorized)
+                    }
+                }
+
+                override fun onMenuItemSelected(menuItem: MenuItem): Boolean =
+                    when (menuItem.itemId) {
+                        R.id.SignIn -> {
+                            findNavController(R.id.nav_host_fragment)
+                                .navigate(R.id.action_feedFragment_to_signInFragment)
+                            true
+                        }
+
+                        R.id.SignUp -> {
+                            findNavController(R.id.nav_host_fragment)
+                                .navigate(R.id.action_feedFragment_to_signUpFragment)
+                            true
+                        }
+
+                        R.id.logout -> {
+                            val builder: AlertDialog.Builder = AlertDialog.Builder(this@AppActivity)
+                            builder
+                                .setMessage(R.string.you_sure)
+                                .setNegativeButton(R.string.no) { dialog, which ->
+                                    dialog.cancel()
+                                }.setPositiveButton(R.string.yes) { dialog, which ->
+                                    AppAuth.getInstance().removeAuth()
+                                    findNavController(R.id.nav_host_fragment)
+                                        .navigate(R.id.feedFragment)
+                                }
+                            val dialog: AlertDialog = builder.create()
+                            dialog.show()
+                            true
+                        }
+
+                        else -> {
+                            false
+                        }
+                    }
+
+            }
+        )
 
         val binding = ActivityAppBinding.inflate(layoutInflater)
         setContentView(binding.root)
